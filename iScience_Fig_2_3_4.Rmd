@@ -1,0 +1,368 @@
+---
+title: "iScience_Fig_2_3_4"
+author: "Jihan Ryu"
+date: "2023-03-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(statsr)
+library(ggcorrplot)
+library(ppcor)
+library(tidyr)
+library(ggpubr)
+library(ggsignif)
+library(psych)
+library(rcompanion)
+library(mediation)
+```
+
+# Fig 2 - First-person pronoun frequency correlation with therapeutic alliance
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Language is matrix that has each unique session on the rows and LIWC-extracted pronoun features (patients and therapists) + clinical alliance scores on the columns.
+## Separate the matrix into different datasets for "we" and "i" features.
+### LIWC-extracted features were logarithmically transformed before running the statistical test. 
+
+we <-language[,c('Session','Patient_we','Therapist_we','Patient.Alliance','Goal','Task','Bond')]
+we <-pivot_longer(we,
+             cols = ends_with("we"),
+             names_to = "Role",
+             values_to = "Frequency"
+             )
+we$Role<-as.factor(we$Role)
+we$Session <- as.factor(we$Session)
+
+i <-language[,c('Session','Patient_i','Therapist_i','Patient.Alliance','Goal','Task','Bond')]
+i <-pivot_longer(i,
+             cols = ends_with("i"),
+             names_to = "Role",
+             values_to = "Frequency"
+             )
+i$Role<-as.factor(i$Role)
+i$Session <- as.factor(i$Session)
+
+# Summarize the group-level frequencies of personal pronoun use categorized by roles in the session, i.e. therapist and patient
+
+we %>%
+   group_by(Role) %>%
+   summarise(we_mean=mean(Frequency),
+             we_n=n(),
+             we_se=sd(Frequency)/we_n
+             )
+
+we_t_mean<-colMeans(we[we$Role=="Therapist_we",][,'Frequency'])
+we_p_mean<-colMeans(we[we$Role=="Patient_we",][,'Frequency'])
+we_t_mean - we_p_mean
+
+i %>%
+   group_by(Role) %>%
+   summarise(i_mean=mean(Frequency),
+             i_n=n(),
+             i_se=sd(Frequency)/i_n
+             )
+
+i_t_mean<-colMeans(i[i$Role=="Therapist_i",][,'Frequency'])
+i_p_mean<-colMeans(i[i$Role=="Patient_i",][,'Frequency'])
+i_t_mean - i_p_mean
+
+# Visualize the summary of feature differences and across alliance (Fig 1A, 1B, 1C, 1D)
+
+GraphA<-ggplot(we)+
+  geom_histogram(data=we[we$Role=="Therapist_we",],
+                 aes(x=Frequency, fill = "blue"), alpha = 0.6)+
+  geom_histogram(data=we[we$Role=="Patient_we",],
+                 aes(x=Frequency, fill = "orange"), alpha = 0.6)+
+  geom_vline(aes(xintercept = we_t_mean), colour="blue", linetype=5)+
+  geom_vline(aes(xintercept = we_p_mean), colour="red", linetype=5)+
+  labs(x="'we' category %",
+       y="Frequency",
+       tag="A")+
+  scale_fill_manual(name="Role", 
+                    values=c("blue", "orange"), 
+                    labels=c("Therapist", "Patient")) 
+
+GraphB<-ggplot(we[we$Role=="Therapist_we",], aes(x=log(Frequency), y=Patient.Alliance))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(x="Therapist 'we' (a.u.)",
+       y="Patient Alliance",
+       tag="B")
+
+GraphC<-ggplot(i)+
+  geom_histogram(data=i[i$Role=="Therapist_i",],
+                 aes(x=Frequency, fill = "blue"), alpha = 0.6)+
+  geom_histogram(data=i[i$Role=="Patient_i",],
+                 aes(x=Frequency, fill = "orange"), alpha = 0.6)+
+  geom_vline(aes(xintercept = i_t_mean), colour="blue", linetype=5)+
+  geom_vline(aes(xintercept = i_p_mean), colour="red", linetype=5)+
+  labs(x="'i' category %",
+       y="Frequency",
+       tag="C")+
+  scale_fill_manual(name="Role", 
+                    values=c("blue", "orange"), 
+                    labels=c("Therapist", "Patient")) 
+
+GraphD<-ggplot(i, aes(x=log(Frequency), y=Patient.Alliance))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  facet_wrap("Role", scales="free_x")+
+  labs(x="'i' (a.u.)",
+       y="Patient Alliance",
+       tag="D")
+
+# Run paired t.test and correlation tests to find any statistifcally significant differences in personal pronoun usage between therapists and patients, and across patient therapeutic alliance.
+
+we$Frequency <- ifelse(we$Frequency==0, 0.01, we$Frequency)
+we$logFreq <- log(we$Frequency)
+t.test(logFreq ~ Role, we, paired=TRUE)
+
+i$Frequency <- ifelse(i$Frequency==0, 0.01, i$Frequency)
+i$logFreq <- log(i$Frequency)
+t.test(logFreq ~ Role, i, paired=TRUE)
+
+attach(we[we$Role=="Therapist_we",])
+cor.test(logFreq, Patient.Alliance,
+         alternative="two.sided",method="pearson", conf.level=0.95)
+
+attach(i[i$Role=="Patient_i",])
+cor.test(i$logFreq, i$Patient.Alliance,
+         alternative="two.sided",method="pearson", conf.level=0.95)
+
+attach(i[i$Role=="Therapist_i",])
+cor.test(i$logFreq, i$Patient.Alliance,
+         alternative="two.sided",method="pearson", conf.level=0.95)
+```
+
+# Fig 3 - Disfluency speech marker correlation with therapeutic alliance
+
+```{r}
+# Again, separate the matrix into different datasets for "AUX-INTJ" and "nonfluent-LIWC" features.
+
+AUX.INTJ <-language[,c('Session','Patient_AUX.INTJ','Therapist_AUX.INTJ','Patient.Alliance','Goal','Task','Bond',"Number.of.Visits")]
+AUX.INTJ <-pivot_longer(AUX.INTJ,
+             cols = ends_with("INTJ"),
+             names_to = "Role",
+             values_to = "Frequency"
+             )
+AUX.INTJ$Role<-as.factor(AUX.INTJ$Role)
+AUX.INTJ$Session <- as.factor(AUX.INTJ$Session)
+
+nonfluency <-language[,c('Session','Patient_nonflu','Therapist_nonflu',
+                         'Patient.Alliance','Goal','Task','Bond', 'Patient.Alliance')]
+
+nonfluency <- pivot_longer(nonfluency,
+             cols = ends_with("nonflu"),
+             names_to = "Role",
+             values_to = "Frequency"
+             )
+nonfluency$Role<-as.factor(nonfluency$Role)
+nonfluency$Session <- as.factor(nonfluency$Session)
+
+# Summarize the group-level frequencies of disfluency categorized by roles in the session, i.e. therapist and patient
+
+AUX.INTJ %>%
+  group_by(Role) %>% 
+  summarise(AUX.INTJ_mean=mean(Frequency),
+            AUX.INTJ_n=n(),
+            AUX.INTJ_se=sd(Frequency)/AUX.INTJ_n
+             )
+
+AUX.INTJ_t_mean<-colMeans(AUX.INTJ[AUX.INTJ$Role=="Therapist_AUX.INTJ",][,'Frequency'])
+AUX.INTJ_p_mean<-colMeans(AUX.INTJ[AUX.INTJ$Role=="Patient_AUX.INTJ",][,'Frequency'])
+AUX.INTJ_t_mean - AUX.INTJ_p_mean
+
+nonfluency %>%
+  group_by(Role) %>% 
+  summarise(nonfluency_mean=mean(Frequency),
+            nonfluency_n=n(),
+            nonfluency_se=sd(Frequency)/nonfluency_n
+             )
+
+nonfluency_t_mean<-colMeans(nonfluency[nonfluency$Role=="Therapist_nonflu",][,'Frequency'])
+nonfluency_p_mean<-colMeans(nonfluency[nonfluency$Role=="Patient_nonflu",][,'Frequency'])
+nonfluency_t_mean - nonfluency_p_mean
+
+# Visualize the summary of feature differences and across alliance (Fig 2A, 2B, 2C, 2D)
+
+GraphE<-ggplot(AUX.INTJ)+
+  geom_histogram(data=AUX.INTJ[AUX.INTJ$Role=="Therapist_AUX.INTJ",],
+                 aes(x=Frequency, fill = "blue"), alpha = 0.6)+
+  geom_histogram(data=AUX.INTJ[AUX.INTJ$Role=="Patient_AUX.INTJ",],
+                 aes(x=Frequency, fill = "orange"), alpha = 0.6)+
+  geom_vline(aes(xintercept = AUX.INTJ_t_mean), colour="blue", linetype=5)+
+  geom_vline(aes(xintercept = AUX.INTJ_p_mean), colour="red", linetype=5)+
+  labs(x="AUX-INTJ Transition Probability",
+       y="Frequency",
+       tag="A")+
+  scale_fill_manual(name="Role", 
+                    values=c("blue", "orange"), 
+                    labels=c("Therapist", "Patient")) 
+
+GraphF<-ggplot(AUX.INTJ[AUX.INTJ$Role=="Patient_AUX.INTJ",], 
+               aes(x=Frequency, y=Patient.Alliance))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(x="Patient: AUX-INTJ Transition Probability",
+       y="Patient Alliance",
+       tag="B")
+
+GraphG<-ggplot(nonfluency)+
+  geom_histogram(data=nonfluency[disfluency$Role=="Therapist_nonflu",],
+                 aes(x=Frequency, fill = "blue"), alpha = 0.6)+
+  geom_histogram(data=nonfluency[disfluency$Role=="Patient_nonflu",],
+                 aes(x=Frequency, fill = "orange"), alpha = 0.6)+
+  geom_vline(aes(xintercept = nonfluency_t_mean), colour="blue", linetype=5)+
+  geom_vline(aes(xintercept = nonfluency_p_mean), colour="red", linetype=5)+
+  labs(x="Nonfluent %",
+       y="Frequency",
+       tag="C")+
+  scale_fill_manual(name="Role", 
+                    values=c("blue", "orange"), 
+                    labels=c("Therapist", "Patient")) 
+
+GraphH<-ggplot(nonfluency[nonfluency$Role=="Patient_nonflu",], 
+               aes(x=log(Frequency), y=Patient.Alliance))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(x="Patient 'nonfluent' (a.u.)",
+       y="Patient Alliance",
+       tag="D")
+
+# Run Wilcox rank sum test (for non-parametric AUX-INTJ data) and paired t.test (for parametric nonfluency data) to find any statistically significant differences in disfluency usage between therapists and patients.
+# Run Spearman method partial correlation correcting for Number of Visits in the dyad (for non-parametric AUX-INTJ data) and pearson method correlation (for parametric nonfluency data) to correlate disfluency features with patient alliance.
+
+wilcox.test(Frequency ~ Role, AUX.INTJ)
+wilcoxonR(x = AUX.INTJ$Frequency,
+          g = AUX.INTJ$Role)
+
+nonfluency$logFreq <- log(nonfluency$Frequency)
+t.test(logFreq ~ Role, nonfluency, paired=TRUE)
+
+attach(AUX.INTJ[AUX.INTJ$Role=="Patient_AUX.INTJ",])
+pcor.test(Patient.Alliance, Frequency, log(Number.of.Visits), method=c("spearman"))
+
+attach(nonfluency[nonfluency$Role=="Patient_nonflu",])
+cor.test(logFreq, Patient.Alliance,
+         alternative="two.sided",method="pearson", conf.level=0.95)
+```
+# Fig 4 - Relationship between patients' trust game behavior and therapists' personal pronoun features / Mediaton analysis
+
+```{r}
+# Prepare a separate matrix with each subject ID (patients and therapists) in rows; and their repayment fractions (raw fraction from round 1-10, and average repayment fraction throughout the game) in the trust game and patient alliance in columns.
+
+trustgame <- trustgame %>% 
+  rowwise() %>% 
+  mutate(rf_avg = mean(c(rf1, rf2, rf3, rf4, rf5, rf6, rf7, rf8, rf9, rf10), na.rm = TRUE),
+         rt_avg = mean(c(rt1, rt2, rt3, rt4, rt5, rt6, rt7, rt8, rt9, rt10), na.rm = TRUE))
+
+# Extract identified language correlates of therapeutic alliance only and organized by subject ID (patients only).
+
+language_correlates<-language[,c("Session","Therapist_we","Therapist_i","Patient_we","Patient_i","Patient_AUX.INTJ","Patient_informal","ID")]
+
+# Merge trust game data with language correlates by patient subject ID
+
+trustgame_with_language_correlates <- merge(trustgame, language_correlates, by="ID", all.x=FALSE) %>% 
+  distinct(ID, .keep_all = TRUE)
+
+# Visualize mean repayment fractions across all 10 rounds in the Trust Game and their relationship with language features extracted from the sessions.
+
+GraphI <- ggplot(trustgame_with_language_correlates, aes(x=rf_avg, y=Therapist_we))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(x="",
+       y="Therapist speaking 'we' in session (%)",
+       tag="A")
+  
+GraphJ <- ggplot(trustgame_with_language_correlates, aes(x=rf_avg, y=Therapist_i))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(x="",
+       y="Therapist speaking 'i' in session (%)",
+       tag="B")
+
+# Visualize mean repayment fractions across all 10 rounds in the Trust Game for patients and therapists, and their correlation with patient-rated alliance from the sessions.
+
+GraphK <- ggplot(trustgame, aes(rf_avg, Alliance, color=Role))  +
+  geom_point() +
+  geom_smooth(method=lm)+
+  scale_color_manual(name="Role",
+                     values=c("Orange", "Blue"), 
+                     labels=c("Patient", "Therapist")) +
+  labs(y="Alliance", x="Mean Repayment",
+       tag="C")
+
+# Run correlation tests among trust game mean repayment fractions, therapist language personal pronoun frequencies, and therapeutic alliance
+
+cor.test(trustgame_with_language_correlates$rf_avg, log(trustgame_with_language_correlates$Therapist_we),
+         method="pearson") 
+cor.test(trustgame_with_language_correlates$rf_avg, log(trustgame_with_language_correlates$Therapist_i),
+         method="pearson") 
+
+attach(trustgame[trustgame$Role=="Patient",])
+cor.test(rf_avg, Alliance, method="pearson") 
+attach(trustgame[trustgame$Role=="Therapist",])
+cor.test(rf_avg, Alliance, method="pearson") 
+
+# Mediator analysis
+
+# Fit two generalized linear models to 1) predict patients' average repayment fraction as a function of therapist_we usage frequency and 2) predict therapeutic alliance as a function of therapist_we usage + average repayment fraction.
+
+med.fit.we <- glm(rf_avg ~ Therapist_we, data=trustgame_with_language_correlates)
+out.fit.we <- glm(Alliance ~ rf_avg + Therapist_we, data=trustgame_with_language_correlates)
+summary(med.fit.we) # get regression coefficient a
+summary(out.fit.we) # get regression coefficient b
+
+# Run mediation analysis with therapist_we usage as treatment variable, average repayment fraction as mediator, and therapeutic alliance as dependent variable. 
+
+set.seed(2022)
+med.out.we <- mediate(med.fit.we, out.fit.we, 
+                   treat = "Therapist_we", mediator = "rf_avg",
+                   sims = 1000,
+                   boot = FALSE,
+                   robustSE = FALSE,
+                   boot.ci.type = "perc"
+                   )
+
+# Used a quasi-Bayesian approximation for confidence intervals (1,000 iterations, α = 0·05) and considered the mediation via average repayment fraction significant if the total indirect effect (a * b) was statistically significant.
+
+summary(med.out.we)
+
+# Do another mediation analysis with therapist_i usage as mediator.
+
+med.fit.i <- glm(rf_avg ~ Therapist_i, data=trustgame_with_language_correlates)
+out.fit.i <- glm(Alliance ~ rf_avg + Therapist_i, data=trustgame_with_language_correlates)
+
+summary(med.fit.i) 
+summary(out.fit.i) 
+
+set.seed(2022)
+med.out.i <- mediate(med.fit.i, out.fit.i, 
+                   treat = "Therapist_i", mediator = "rf_avg",
+                   sims = 1000,
+                   boot = FALSE,
+                   robustSE = FALSE,
+                   boot.ci.type = "perc"
+                   )
+
+summary(med.out.i)
+
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
