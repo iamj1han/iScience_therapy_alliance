@@ -8,13 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
-library(ggplot2)
-library(statsr)
-library(ggcorrplot)
-library(ppcor)
 library(tidyr)
-library(ggpubr)
+library(ggplot2)
+library(ggcorrplot)
 library(ggsignif)
+library(ppcor)
 library(psych)
 library(rcompanion)
 library(mediation)
@@ -22,8 +20,8 @@ library(mediation)
 
 # Fig 2 - First-person pronoun frequency correlation with therapeutic alliance
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r figure_2, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 
 # Language is matrix that has each unique session on the rows and LIWC-extracted pronoun features (patients and therapists) + clinical alliance scores on the columns.
 ## Separate the matrix into different datasets for "we" and "i" features.
@@ -141,7 +139,7 @@ cor.test(i$logFreq, i$Patient.Alliance,
 
 # Fig 3 - Disfluency speech marker correlation with therapeutic alliance
 
-```{r}
+```{r figure 3, echo = FALSE}
 # Again, separate the matrix into different datasets for "AUX-INTJ" and "nonfluent-LIWC" features.
 
 AUX.INTJ <-language[,c('Session','Patient_AUX.INTJ','Therapist_AUX.INTJ','Patient.Alliance','Goal','Task','Bond',"Number.of.Visits")]
@@ -253,7 +251,7 @@ cor.test(logFreq, Patient.Alliance,
 ```
 # Fig 4 - Relationship between patients' trust game behavior and therapists' personal pronoun features / Mediaton analysis
 
-```{r}
+```{r figure_4, echo = FALSE}
 # Prepare a separate matrix with each subject ID (patients and therapists) in rows; and their repayment fractions (raw fraction from round 1-10, and average repayment fraction throughout the game) in the trust game and patient alliance in columns.
 
 trustgame <- trustgame %>% 
@@ -354,15 +352,6 @@ summary(med.out.i)
 
 ```
 
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+---
+End
+---
