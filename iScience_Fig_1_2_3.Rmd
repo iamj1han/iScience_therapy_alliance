@@ -24,6 +24,9 @@ library(mediation)
 knitr::opts_chunk$set(echo = FALSE)
 
 # Language is matrix that has each unique session on the rows and LIWC-extracted pronoun features (patients and therapists) + clinical alliance scores on the columns.
+
+language<-read.csv("language.csv") 
+
 ## Separate the matrix into different datasets for "we" and "i" features.
 ### LIWC-extracted features were logarithmically transformed before running the statistical test. 
 
@@ -253,6 +256,8 @@ cor.test(logFreq, Patient.Alliance,
 
 ```{r figure_4, echo = FALSE}
 # Prepare a separate matrix with each subject ID (patients and therapists) in rows; and their repayment fractions (raw fraction from round 1-10, and average repayment fraction throughout the game) in the trust game and patient alliance in columns.
+
+trustgame<-read.csv("trustgame.csv") 
 
 trustgame <- trustgame %>% 
   rowwise() %>% 
