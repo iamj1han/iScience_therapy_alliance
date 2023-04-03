@@ -140,10 +140,10 @@ cor.test(i$logFreq, i$Patient.Alliance,
          alternative="two.sided",method="pearson", conf.level=0.95)
 ```
 
-# Fig 3 - Disfluency speech marker correlation with therapeutic alliance
+# Fig 3 - Non-fluency speech marker correlation with therapeutic alliance
 
 ```{r figure 3, echo = FALSE}
-# Again, separate the matrix into different datasets for "AUX-INTJ" and "nonfluent-LIWC" features.
+# Again, separate the matrix into different datasets for "AUX-INTJ" and "non-fluent-LIWC" features.
 
 AUX.INTJ <-language[,c('Session','Patient_AUX.INTJ','Therapist_AUX.INTJ','Patient.Alliance','Goal','Task','Bond',"Number.of.Visits")]
 AUX.INTJ <-pivot_longer(AUX.INTJ,
@@ -165,7 +165,7 @@ nonfluency <- pivot_longer(nonfluency,
 nonfluency$Role<-as.factor(nonfluency$Role)
 nonfluency$Session <- as.factor(nonfluency$Session)
 
-# Summarize the group-level frequencies of disfluency categorized by roles in the session, i.e. therapist and patient
+# Summarize the group-level frequencies of non-fluency categorized by roles in the session, i.e. therapist and patient
 
 AUX.INTJ %>%
   group_by(Role) %>% 
@@ -236,7 +236,7 @@ GraphH<-ggplot(nonfluency[nonfluency$Role=="Patient_nonflu",],
        tag="D")
 
 # Run Wilcox rank sum test (for non-parametric AUX-INTJ data) and paired t.test (for parametric nonfluency data) to find any statistically significant differences in disfluency usage between therapists and patients.
-# Run Spearman method partial correlation correcting for Number of Visits in the dyad (for non-parametric AUX-INTJ data) and pearson method correlation (for parametric nonfluency data) to correlate disfluency features with patient alliance.
+# Run Spearman method partial correlation correcting for Number of Visits in the dyad (for non-parametric AUX-INTJ data) and pearson method correlation (for parametric nonfluency data) to correlate non-fluency features with patient alliance.
 
 wilcox.test(Frequency ~ Role, AUX.INTJ)
 wilcoxonR(x = AUX.INTJ$Frequency,
