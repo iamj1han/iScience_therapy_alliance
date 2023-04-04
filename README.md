@@ -2,7 +2,7 @@
 
 <b>File names under this repository ; main objective of the file/codes</b>
 
-1. Transcript_preprocessing.ipynb ; Chop and preprocess therapy Session transcript files.
+1. Transcript_preprocessing.ipynb ; Chop and preprocess therapy session transcript files.
               
 This Notebook will:
 read all the transcripts in '/Users/Heisig/Jihan/Transcripts/' 
