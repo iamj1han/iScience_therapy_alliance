@@ -18,7 +18,7 @@ library(rcompanion)
 library(mediation)
 ```
 
-# Fig 2 - First-person pronoun frequency correlation with therapeutic alliance
+# Fig 1 - First-person pronoun frequency correlation with therapeutic alliance
 
 ```{r figure_2, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -140,7 +140,7 @@ cor.test(i$logFreq, i$Patient.Alliance,
          alternative="two.sided",method="pearson", conf.level=0.95)
 ```
 
-# Fig 3 - Non-fluency speech marker correlation with therapeutic alliance
+# Fig 2 - Non-fluency speech marker correlation with therapeutic alliance
 
 ```{r figure 3, echo = FALSE}
 # Again, separate the matrix into different datasets for "AUX-INTJ" and "non-fluent-LIWC" features.
@@ -252,7 +252,7 @@ attach(nonfluency[nonfluency$Role=="Patient_nonflu",])
 cor.test(logFreq, Patient.Alliance,
          alternative="two.sided",method="pearson", conf.level=0.95)
 ```
-# Fig 4 - Relationship between patients' trust game behavior and therapists' personal pronoun features / Mediaton analysis
+# Fig 3 - Relationship between patients' trust game behavior and therapists' personal pronoun features / Mediaton analysis
 
 ```{r figure_4, echo = FALSE}
 # Prepare a separate matrix with each subject ID (patients and therapists) in rows; and their repayment fractions (raw fraction from round 1-10, and average repayment fraction throughout the game) in the trust game and patient alliance in columns.
