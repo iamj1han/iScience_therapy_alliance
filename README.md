@@ -12,7 +12,7 @@ create POS tagged tokens using stanza and saves them in: '/Users/Heisig/Jihan/PO
 create a few plots and stats (optional);
 Linguistic Inquiry Word Count software (LIWC-2015 edition) will be then run on split subject interviewer transcript.
 
-2. Part_of_speech_tag_transition_matrix.ipynb ; Generate Part of Speech (POS) tags ad transition matrix.
+2. Part_of_speech_tag_transition_matrix.ipynb ; Generate Part of Speech (POS) tags transition matrix.
 
 This Notebook will:
 read (or reconstruct) the POS file containing all the POS for each sentence;
