@@ -31,3 +31,12 @@ Fig 1 - histogram of patient and therapist first-person pronoun usage and correl
 Fig 2 - histogram of patient and therapist non-fluency and correlations with alliance;
 Fig 3 - extract average repayment fraction of subjects playing trust game as objective index of trust and run mediation analysis to see if it mediates
           the association between first-person pronoun features and alliance.
+          
+5. language.csv
+
+De-identified langauge feature dataset extracted (LIWC-2015 and POS transition) in the sessions and associated clinical variables. Data dictionary: Closeness/Dependence/Anxiety - revised adult attachment scores of patients, Prev_alliance - strength of patient-rated alliance with the therapist in the previous treatment prior to the current one, Sex (0 = male patient, 1 = female patient), Telehealth (0 = in-person, 1 = telehealth), Therapist_experience (0 = trainee psychologist/psychaitrist with lifetime patients <10, 1 = trainee psychologist/psychiatrist with lifetime patients >=10 & <100, 2 = faculty psychotherapists with lifetime patients 100>=).
+
+6. trustgame.csv
+
+Trust game indices of each subject (ID) who played trustee. Data dictionary: Role - role of the trustee in real-world psychotherapy relationship, i.e. P = patient, T = therapist; Repayment fraction from round 1 to 10 made by trustee, i.e. rf1-rf10; investor total scores at the end of the game; trustee (i.e. subject) total scores at the end of the game; Scores_Total - the sum of investor and trustee total scores at the end of the game.
+
