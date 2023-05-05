@@ -1,6 +1,6 @@
 # iScience_therapy_alliance
 
-<b>File names under this repository ; main objective of the file/codes</b>
+<b>File names under this repository ; description of the file/codes</b>
 
 1. Transcript_preprocessing.ipynb ; Chop and preprocess therapy session transcript files.
               
