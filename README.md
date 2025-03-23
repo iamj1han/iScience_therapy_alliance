@@ -1,6 +1,7 @@
 # iScience_therapy_alliance
 
-<b>File names under this repository ; description of the file/codes</b>
+![Ryu_fig_4](https://github.com/user-attachments/assets/558c182e-26a5-4da8-9226-20c588befb59)
+
 
 1. Transcript_preprocessing.ipynb ; Chop and preprocess therapy session transcript files.
               
